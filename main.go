@@ -78,6 +78,11 @@ func main() {
         log.Fatal("PORT environment variable is not set")
     }
 
+	 // Serve static files in production
+    if os.Getenv("ENV") == "production" {
+        r.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./client/.next"))))
+    }
+
     http.ListenAndServe(":" + PORT, r)
 }
 
