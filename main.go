@@ -31,6 +31,7 @@ func main() {
 	})
 
 	r.Post("/short-it", createShortURLHandler)
+	r.Get("/short/{key}", redirectHandler)
 	http.ListenAndServe(":3000", r)
 }
 
@@ -57,8 +58,32 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	
 }
 
+func redirectHandler(w http.ResponseWriter, r *http.Request) {
+	key := chi.URLParam(r, "key")
+	if key == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("key field is empty"))
+	}
+
+	//fetch mapping
+	u := fetchMapping(key)
+
+	if u == "" {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("URL not found"))
+	}
+
+	http.Redirect(w, r, u, http.StatusFound)
+}
+
 func insertMapping(key string, u string) {
 	urlMapper.Lock.Lock()
 	defer urlMapper.Lock.Unlock()
 	urlMapper.Mapping[key] = u
+}
+
+func fetchMapping(key string) string {
+	urlMapper.Lock.Lock()
+	defer urlMapper.Lock.Unlock()
+	return urlMapper.Mapping[key]
 }
