@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/lithammer/shortuuid/v4"
 )
 
@@ -26,6 +27,9 @@ func init() {
 func main() {
 	r := chi.NewRouter()
 
+	r.Use(middleware.Logger)
+
+
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Server is running..."))
 	})
@@ -42,6 +46,7 @@ func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
 	if u == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("URL is required"))
+		return
 	}
 
 	//generate key
@@ -63,6 +68,7 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	if key == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("key field is empty"))
+		return
 	}
 
 	//fetch mapping
@@ -71,6 +77,7 @@ func redirectHandler(w http.ResponseWriter, r *http.Request) {
 	if u == "" {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("URL not found"))
+		return
 	}
 
 	http.Redirect(w, r, u, http.StatusFound)
