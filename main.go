@@ -25,10 +25,13 @@ var (
 
 func init() {
     // Load environment variables from .env file
-    err := godotenv.Load()
-    if err != nil {
-        log.Fatal("Error loading .env file")
-    }
+   if os.Getenv(("ENV")) != "production" {
+		// Load .env file if not in production
+		err := godotenv.Load(".env")
+		if err != nil {
+	 	 	log.Fatal("Error loading .env file", err)
+		}
+	}
 
     // Get MongoDB URI from environment variable
     mongoURI := os.Getenv("MONGODB_URI")
@@ -37,6 +40,7 @@ func init() {
     }
 
     // Connect to MongoDB
+    var err error
     client, err = mongo.Connect(ctx, options.Client().ApplyURI(mongoURI))
     if err != nil {
         log.Fatal(err)
@@ -68,7 +72,13 @@ func main() {
 
     r.Post("/short-it", createShortURLHandler)
     r.Get("/short/{key}", redirectHandler)
-    http.ListenAndServe(":4000", r)
+
+	PORT := os.Getenv("PORT")
+    if PORT == "" {
+        log.Fatal("PORT environment variable is not set")
+    }
+
+    http.ListenAndServe(":" + PORT, r)
 }
 
 func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
