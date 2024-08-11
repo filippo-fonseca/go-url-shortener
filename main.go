@@ -83,7 +83,7 @@ func main() {
         r.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./client/.next"))))
     }
 
-    http.ListenAndServe(":" + PORT, r)
+    http.ListenAndServe("0.0.0.0:" + PORT, r)
 }
 
 func createShortURLHandler(w http.ResponseWriter, r *http.Request) {
